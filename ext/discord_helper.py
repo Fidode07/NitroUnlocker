@@ -2,7 +2,7 @@ import shutil
 import time
 
 from ext.out import out
-from subprocess import Popen
+from subprocess import Popen, DEVNULL
 from typing import *
 import psutil
 import os
@@ -76,7 +76,7 @@ class DiscordHelper:
         os.makedirs(src_folder, exist_ok=True)
         os.makedirs(dst_folder, exist_ok=True)
 
-        p: Popen = Popen(f'xcopy /E {src_folder} {dst_folder} & exit', shell=True)
+        p: Popen = Popen(f'xcopy /E {src_folder} {dst_folder}', stdout=DEVNULL, stderr=DEVNULL, shell=True)
         p.wait()
 
     def __get_core_asar_path(self, check_exists: bool = True) -> str:
@@ -162,9 +162,8 @@ z = setInterval(NitroUnlocker.loader, 100);
         del file_content
         out('Attempt 2', 'Editing finished')
 
-    def compress_asar(self) -> None:
-        out('Attempt 3', 'Pack Folder into new-core.asar ...')
-        p: Popen = Popen('npx asar pack tmp new-core.asar', shell=True)
+    def __pack_asar(self, src_folder: str) -> None:
+        p: Popen = Popen(f'npx asar pack {src_folder} new-core.asar', shell=True)
         p.wait()
         i: int = 0
         exists: bool = os.path.isfile('new-core.asar')
@@ -174,9 +173,35 @@ z = setInterval(NitroUnlocker.loader, 100);
             time.sleep(1)
             exists = os.path.isfile('new-core.asar')
             i += 1
+
+    def compress_asar(self) -> None:
+        out('Attempt 3', 'Pack Folder into new-core.asar ...')
+
+        self.__pack_asar('tmp')
+
         out('Attempt 3', 'Successfully, kill discord process and move files.')
         if os.path.isfile(self.__get_core_asar_path(check_exists=False)):
             os.remove(self.__get_core_asar_path())
         shutil.move('new-core.asar', self.__get_core_asar_path(check_exists=False))
         out('Attempt 3', 'Packaging finished, restart discord.')
-        Popen(self.get_discord_path(), shell=True)
+        # Popen(self.get_discord_path(), shell=True)
+
+    def restore_backup(self) -> None:
+        if not all([os.path.isdir('backup') and os.path.isfile('backup/package.json')]):
+            raise FileNotFoundError('Sorry, there is no backup.')
+        self.kill_discord_procs()  # Important, otherwise .asar is used by other procs
+
+        if os.path.isfile('backup/old-core.asar'):
+            if os.path.isfile(self.__get_core_asar_path(check_exists=False)):
+                os.remove(self.__get_core_asar_path())
+            shutil.copy('backup/old-core.asar', self.__get_core_asar_path(check_exists=False))
+            return
+
+        # Backup dir exists, old-core.asar wasn't created yet
+        if all([os.path.isfile('backup/package.json'), os.path.isdir('backup/app')]):
+            self.__pack_asar('backup')
+            if os.path.isfile(self.__get_core_asar_path(check_exists=False)):
+                os.remove(self.__get_core_asar_path())
+            shutil.move('new-core.asar', self.__get_core_asar_path(check_exists=False))
+            return
+        raise FileNotFoundError('Sorry, there is no backup.')

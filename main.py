@@ -37,7 +37,7 @@ class StringHelper:
 
 
 def main() -> None:
-    str_helper: StringHelper = StringHelper(title='Nitro Unlocker', width=72)
+    str_helper: StringHelper = StringHelper(title='Nitro Unlocker', width=80)
     print(str_helper.generate_table())
 
     dc_helper: DiscordHelper = DiscordHelper()
@@ -45,11 +45,23 @@ def main() -> None:
     dc_path: str = dc_helper.get_discord_path()
     out('Discord Path', dc_path)
     out('Attempt 1', 'Try to extract core.asar ...')
-    dc_helper.kill_discord_procs()
-    dc_helper.extract_core_asar()  # extracts core.asar
-    dc_helper.inject_nitro_unlocker()
-    dc_helper.compress_asar()
-    dc_helper.clear()  # deletes the tmp directory
+    print('\nActions:')
+    out('[0]', 'Unlock Nitro')
+    out('[1]', 'Restore Backup')
+    out('->', 'Any other key to exit')
+    print(Fore.RED)
+    action: str = input('_> ').strip()
+    if not any([action == '0', action == '1']):
+        return
+    if action == '0':
+        dc_helper.kill_discord_procs()
+        dc_helper.extract_core_asar()  # extracts core.asar
+        dc_helper.inject_nitro_unlocker()
+        dc_helper.compress_asar()
+        dc_helper.clear()  # deletes the tmp directory
+        return
+    # action is 1
+    dc_helper.restore_backup()
 
     # Reset Color
     print(Fore.RESET)
