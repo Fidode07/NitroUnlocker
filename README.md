@@ -8,10 +8,11 @@ Exactly, you inject JavaScript and change the value, so you can stream at 1440p.
 
 # ✍ Usage 
 
-First of all, you need Python. The tool was developed in Python 3.8 so ...
-I recommend this version of Python. Then just navigate to the script and run main.py.
+First you need Python. The tool was made in Python 3.8 so ... I would recommend that version to you. Otherwise you only need the Discord Desktop application. That's it, the project has no dependencies.
 
-<strong>NOTE:</strong> You may start discord first!
+Just navigate to the Python script and run main.py.
+
+<strong>NOTE:</strong> You need to start discord first!
 
 ```shell
 cd <path/to/<script>
