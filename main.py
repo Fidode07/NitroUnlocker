@@ -1,10 +1,5 @@
 from ext.discord_helper import DiscordHelper
-from ext.out import out
-from colorama import Fore
-import os
-
-# Fix some weird color problems: https://stackoverflow.com/questions/64159164/cmd-color-problems
-os.system("")
+from ext.out import Color, out
 
 
 class StringHelper:
@@ -23,15 +18,17 @@ class StringHelper:
         self.__half_center_padding: int = ((self.__width - len(self.__title)) // 2)
 
     def generate_table(self) -> str:
-        r: str = Fore.LIGHTGREEN_EX + '-' * self.__width + '\n'
+        r: str = Color.bright_green + '-' * self.__width + '\n'
         r += '|' + ' ' * (self.__width - 2) + '|\n'
         r += '|'
-        r += ' ' * (self.__half_center_padding - 1) + Fore.RED + self.__title + Fore.LIGHTGREEN_EX + ' ' * (
-                self.__half_center_padding - 1)
+        r += ' ' * (
+                self.__half_center_padding - 1) + Color.bright_red + Color.underline + self.__title + Color.reset \
+             + Color.bright_green + ' ' * (
+                     self.__half_center_padding - 1)
         r += '|\n'
         r += '|' + ' ' * (self.__width - 2) + '|\n'
         r += '|' + ' ' * (self.__width - (
-                len(self.__copyright) + 4)) + Fore.RED + self.__copyright + Fore.LIGHTGREEN_EX + ' ' * 2 + '|\n'
+                len(self.__copyright) + 4)) + Color.red + self.__copyright + Color.bright_green + ' ' * 2 + '|\n'
         r += '-' * self.__width
         return r
 
@@ -49,7 +46,7 @@ def main() -> None:
     out('[0]', 'Unlock Nitro')
     out('[1]', 'Restore Backup')
     out('->', 'Any other key to exit')
-    print(Fore.RED)
+    print(Color.red)
     action: str = input('_> ').strip()
     if action not in ['0', '1']:
         return
@@ -64,7 +61,7 @@ def main() -> None:
     dc_helper.restore_backup()
 
     # Reset Color
-    print(Fore.RESET)
+    print(Color.reset)
 
 
 if __name__ == '__main__':
