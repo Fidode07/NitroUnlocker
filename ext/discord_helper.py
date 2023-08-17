@@ -1,10 +1,11 @@
+import os
 import shutil
-from ext.out import out
-from ext.asar_helper import AsarHelper
 from subprocess import Popen, DEVNULL
 from typing import *
-import psutil
-import os
+
+from ext.asar_helper import AsarHelper
+from ext.out import out
+from ext.process_helper import Window, ProcessHelper
 
 
 class ExtractionError(Exception):
@@ -21,27 +22,32 @@ class PackingError(Exception):
 
 class DiscordHelper:
     def __init__(self) -> None:
-        self.__dc_proc: Union[psutil.Process, None] = None
+        self.__proc_helper: ProcessHelper = ProcessHelper()
+        self.__dc_proc: Union[Window, None] = None
 
     def kill_discord_procs(self) -> None:
-        for proc in psutil.process_iter():
-            if not proc.name() == 'Discord.exe':
-                continue
-            try:
-                proc.kill()
-            except (Exception,):
-                pass
+        if self.__dc_proc:
+            self.__proc_helper.kill_proc_by_hwnd(self.__dc_proc.hwnd, timeout=1.5)
+            return
+        self.__init_dc_proc()
+        self.kill_discord_procs()
+
+    def __init_dc_proc(self) -> None:
+        if self.__dc_proc:
+            return
+        results: List[Window] = self.__proc_helper.find_window_by_title('discord')
+        length: int = len(results)
+        if length == 0:
+            raise ProcessLookupError('Please start discord before using this tool!')
+        if length > 1:
+            raise ChildProcessError('Sorry, found multiple discord procs.')
+        self.__dc_proc = results[0]
 
     def get_discord_path(self) -> str:
         if self.__dc_proc:
-            return self.__dc_proc.exe()
-        for proc in psutil.process_iter():
-            if not proc.name() == 'Discord.exe':
-                continue
-            self.__dc_proc = proc
-            return proc.exe()
-        raise ProcessLookupError('Please start Discord before using this tool!')
-        # return r'C:\Users\Fido_de07\AppData\Local\Discord\app-1.0.9016\Discord.exe'
+            return self.__dc_proc.executable_path
+        self.__init_dc_proc()
+        return self.get_discord_path()
 
     def get_static_discord_path(self) -> str:
         """

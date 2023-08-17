@@ -75,8 +75,8 @@ class AsarHelper:
                         'offset': str(offset)
                     }
 
-                    with open(cur_file.path, 'rb') as fp:
-                        concatenated_files += fp.read()
+                    with open(cur_file.path, 'rb') as f_stream:
+                        concatenated_files += f_stream.read()
 
                     offset += size
 
