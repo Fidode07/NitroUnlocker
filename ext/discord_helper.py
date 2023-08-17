@@ -1,7 +1,6 @@
 import shutil
-import time
-
 from ext.out import out
+from ext.asar_helper import AsarHelper
 from subprocess import Popen, DEVNULL
 from typing import *
 import psutil
@@ -42,6 +41,7 @@ class DiscordHelper:
             self.__dc_proc = proc
             return proc.exe()
         raise ProcessLookupError('Please start Discord before using this tool!')
+        # return r'C:\Users\Fido_de07\AppData\Local\Discord\app-1.0.9016\Discord.exe'
 
     def get_static_discord_path(self) -> str:
         """
@@ -62,10 +62,13 @@ class DiscordHelper:
             raise FileExistsError(
                 'Invalid backup structure! Please make sure that the backup folder is empty or deleted!')
 
-        p: Popen = Popen(f'cd {os.getcwd()} & npx asar extract {self.__get_core_asar_path()} tmp & exit', shell=True)
-        p.wait()
-        if len(os.listdir('tmp')) == 0 or not os.path.isfile('tmp/package.json'):
-            raise ExtractionError('Unable to extract core.asar, make sure Node is installed!')
+        # p: Popen = Popen(f'cd {os.getcwd()} & npx asar extract {self.__get_core_asar_path()} tmp & exit', shell=True)
+        # p.wait()
+        # if len(os.listdir('tmp')) == 0 or not os.path.isfile('tmp/package.json'):
+        #     raise ExtractionError('Unable to extract core.asar, make sure Node is installed!')
+
+        AsarHelper.extract_asar(self.__get_core_asar_path(), 'tmp')
+
         out('Attempt 1', 'Extracted Core.asar')
         out('Attempt 1', 'Create Backup of current core.asar ...')
         shutil.move(self.__get_core_asar_path(), 'backup/old-core.asar')
@@ -163,16 +166,17 @@ z = setInterval(NitroUnlocker.loader, 100);
         out('Attempt 2', 'Editing finished')
 
     def __pack_asar(self, src_folder: str) -> None:
-        p: Popen = Popen(f'npx asar pack {src_folder} new-core.asar', shell=True)
-        p.wait()
-        i: int = 0
-        exists: bool = os.path.isfile('new-core.asar')
-        while not exists:
-            if i > 9:
-                raise PackingError('Unable to pack new-core.asar')
-            time.sleep(1)
-            exists = os.path.isfile('new-core.asar')
-            i += 1
+        # p: Popen = Popen(f'npx asar pack {src_folder} new-core.asar', shell=True)
+        # p.wait()
+        # i: int = 0
+        # exists: bool = os.path.isfile('new-core.asar')
+        # while not exists:
+        #     if i > 9:
+        #         raise PackingError('Unable to pack new-core.asar')
+        #     time.sleep(1)
+        #     exists = os.path.isfile('new-core.asar')
+        #     i += 1
+        AsarHelper.pack_asar(src_folder, 'new-core.asar')
 
     def compress_asar(self) -> None:
         out('Attempt 3', 'Pack Folder into new-core.asar ...')

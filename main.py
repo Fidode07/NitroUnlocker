@@ -51,7 +51,7 @@ def main() -> None:
     out('->', 'Any other key to exit')
     print(Fore.RED)
     action: str = input('_> ').strip()
-    if not any([action == '0', action == '1']):
+    if action not in ['0', '1']:
         return
     if action == '0':
         dc_helper.kill_discord_procs()
