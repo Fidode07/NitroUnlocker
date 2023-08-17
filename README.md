@@ -1,3 +1,5 @@
+[![CodeFactor](https://www.codefactor.io/repository/github/fidode07/nitrounlocker/badge)](https://www.codefactor.io/repository/github/fidode07/nitrounlocker)
+
 # 🔓 NitroUnlocker 🔓
 
 What if there is a function called getCurrentUser in discord?
