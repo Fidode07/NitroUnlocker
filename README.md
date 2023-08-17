@@ -8,7 +8,7 @@ Exactly, you inject JavaScript and change the value, so you can stream at 1440p.
 
 # ✍ Usage 
 
-First of all, you need Python and NodeJS (npx). The tool was developed in Python 3.8 so ...
+First of all, you need Python. The tool was developed in Python 3.8 so ...
 I recommend this version of Python. Then just navigate to the script and run main.py.
 
 <strong>NOTE:</strong> You may start discord first!
