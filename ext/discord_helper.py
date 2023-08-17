@@ -40,6 +40,10 @@ class DiscordHelper:
         if length == 0:
             raise ProcessLookupError('Please start discord before using this tool!')
         if length > 1:
+            results = [x for x in results if x.executable_path.endswith('Discord.exe')]
+            if len(results) == 1:
+                self.__dc_proc = results[0]
+                return
             raise ChildProcessError('Sorry, found multiple discord procs.')
         self.__dc_proc = results[0]
 
@@ -85,7 +89,7 @@ class DiscordHelper:
         os.makedirs(src_folder, exist_ok=True)
         os.makedirs(dst_folder, exist_ok=True)
 
-        p: Popen = Popen(f'xcopy /E {src_folder} {dst_folder}', stdout=DEVNULL, stderr=DEVNULL, shell=True)
+        p: Popen = Popen(f'xcopy /E {src_folder} {dst_folder}', stdout=DEVNULL, stderr=DEVNULL, shell=False)
         p.wait()
 
     def __get_core_asar_path(self, check_exists: bool = True) -> str:

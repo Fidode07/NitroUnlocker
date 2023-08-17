@@ -68,6 +68,8 @@ class AsarHelper:
                         'link': os.path.realpath(cur_file.name)
                     }
                 else:
+                    if cur_file.name == 'old-core.asar':
+                        continue
                     size = cur_file.stat().st_size
 
                     result['files'][cur_file.name] = {

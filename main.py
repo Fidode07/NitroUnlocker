@@ -1,3 +1,5 @@
+import os
+
 from ext.discord_helper import DiscordHelper
 from ext.out import Color, out
 
@@ -34,14 +36,14 @@ class StringHelper:
 
 
 def main() -> None:
+    if os.name != 'nt':
+        raise NotImplementedError(f'Sorry, {os.name} is not supported yet!')
+    dc_helper: DiscordHelper = DiscordHelper()
+    dc_path: str = dc_helper.get_discord_path()
     str_helper: StringHelper = StringHelper(title='Nitro Unlocker', width=80)
     print(str_helper.generate_table())
 
-    dc_helper: DiscordHelper = DiscordHelper()
-
-    dc_path: str = dc_helper.get_discord_path()
     out('Discord Path', dc_path)
-    out('Attempt 1', 'Try to extract core.asar ...')
     print('\nActions:')
     out('[0]', 'Unlock Nitro')
     out('[1]', 'Restore Backup')
@@ -51,7 +53,9 @@ def main() -> None:
     if action not in ['0', '1']:
         return
     if action == '0':
+        out('Attempt 0', 'Kill discord proc ...')
         dc_helper.kill_discord_procs()
+        out('Attempt 1', 'Try to extract core.asar ...')
         dc_helper.extract_core_asar()  # extracts core.asar
         dc_helper.inject_nitro_unlocker()
         dc_helper.compress_asar()
