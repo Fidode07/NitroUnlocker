@@ -28,6 +28,11 @@ class DiscordHelper:
     def kill_discord_procs(self) -> None:
         if self.__dc_proc:
             self.__proc_helper.kill_proc_by_hwnd(self.__dc_proc.hwnd, timeout=1.5)
+            all_dc_procs = self.__proc_helper.get_all_discord_procs()
+
+            for proc_pid in all_dc_procs:
+                self.__proc_helper.kill_proc_by_pid(proc_pid, timeout=1.5)
+
             return
         self.__init_dc_proc()
         self.kill_discord_procs()

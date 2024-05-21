@@ -33,6 +33,10 @@ class ProcessHelper:
             wintypes.LPWSTR,
             ctypes.c_int]
 
+        self.psapi.GetModuleBaseName = self.psapi.GetModuleBaseNameW
+        self.psapi.GetModuleBaseName.restype = wintypes.DWORD
+        self.psapi.GetModuleBaseName.argtypes = [wintypes.HANDLE, wintypes.HMODULE, wintypes.LPWSTR, wintypes.DWORD]
+
     def find_window_by_title(self, title: str, only_contains: bool = True) -> Union[List[Window], Window]:
         if not only_contains:
             hwnd: int = ctypes.windll.user32.FindWindowA(None, title)
@@ -76,12 +80,8 @@ class ProcessHelper:
 
         return lp_filename.value
 
-    def kill_proc_by_hwnd(self, hwnd: int, timeout: float = 0) -> bool:
-        process_id = wintypes.DWORD()
-        self.user32.GetWindowThreadProcessId(hwnd, ctypes.byref(process_id))
-
-        process_handle = self.kernel32.OpenProcess(
-            0x0001 | 0x0400 | 0x0010, False, process_id)
+    def kill_proc_by_pid(self, pid: int, timeout: float = 0) -> bool:
+        process_handle = self.kernel32.OpenProcess(0x0001 | 0x0400 | 0x0010, False, pid)
         if not process_handle:
             return False
 
@@ -89,3 +89,44 @@ class ProcessHelper:
         self.kernel32.CloseHandle(process_handle)
         time.sleep(timeout)
         return bool(termination_result)
+
+    def kill_proc_by_hwnd(self, hwnd: int, timeout: float = 0) -> bool:
+        process_id = wintypes.DWORD()
+        self.user32.GetWindowThreadProcessId(hwnd, ctypes.byref(process_id))
+
+        # process_handle = self.kernel32.OpenProcess(
+        #     0x0001 | 0x0400 | 0x0010, False, process_id)
+        # if not process_handle:
+        #     return False
+        #
+        # termination_result = self.kernel32.TerminateProcess(process_handle, 0)
+        # self.kernel32.CloseHandle(process_handle)
+        # time.sleep(timeout)
+        # return bool(termination_result)
+        return self.kill_proc_by_pid(process_id.value, timeout)
+
+    def get_all_discord_procs(self) -> List[int]:
+        procs = self.__enum_processes()
+        return [x for x in procs if 'discord.exe' in self.__get_proc_name(x).lower()]
+
+    def __get_proc_name(self, process_id: int) -> str:
+        sz_process_name = (ctypes.c_wchar * 260)()
+
+        h_process = self.kernel32.OpenProcess(0x0400 | 0x0010, False, process_id)
+        if h_process:
+            h_mod = wintypes.HMODULE()
+            cb_needed = wintypes.DWORD()
+            if self.psapi.EnumProcessModules(h_process, ctypes.byref(h_mod), ctypes.sizeof(h_mod),
+                                             ctypes.byref(cb_needed)):
+                self.psapi.GetModuleBaseName(h_process, h_mod, sz_process_name, 260)
+            self.kernel32.CloseHandle(h_process)
+
+        return sz_process_name.value
+
+    def __enum_processes(self) -> List[int]:
+        a_processes = (wintypes.DWORD * 1024)()
+        cb_needed = wintypes.DWORD()
+
+        if not self.psapi.EnumProcesses(a_processes, ctypes.sizeof(a_processes), ctypes.byref(cb_needed)):
+            return []
+        return [int(x) for x in a_processes[:cb_needed.value // ctypes.sizeof(wintypes.DWORD)]]
