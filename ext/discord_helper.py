@@ -1,5 +1,6 @@
 import os
 import shutil
+import sys
 from subprocess import Popen, DEVNULL
 from typing import *
 
@@ -27,7 +28,7 @@ class DiscordHelper:
 
     def kill_discord_procs(self) -> None:
         if self.__dc_proc:
-            self.__proc_helper.kill_proc_by_hwnd(self.__dc_proc.hwnd, timeout=1.5)
+            self.__proc_helper.kill_proc_by_hwnd(self.__dc_proc.hwnd, timeout=5)
             all_dc_procs = self.__proc_helper.get_all_discord_procs()
 
             for proc_pid in all_dc_procs:
@@ -44,12 +45,10 @@ class DiscordHelper:
         length: int = len(results)
         if length == 0:
             raise ProcessLookupError('Please start discord before using this tool!')
-        if length > 1:
-            results = [x for x in results if x.executable_path.endswith('Discord.exe')]
-            if len(results) == 1:
-                self.__dc_proc = results[0]
-                return
-            raise ChildProcessError('Sorry, found multiple discord procs.')
+
+        results = [x for x in results if x.executable_path.endswith('Discord.exe')]
+        if len(results) == 0:
+            raise ProcessLookupError('Please start discord before using this tool!')
         self.__dc_proc = results[0]
 
     def get_discord_path(self) -> str:
@@ -204,6 +203,9 @@ z = setInterval(NitroUnlocker.loader, 100);
         shutil.move('new-core.asar', self.__get_core_asar_path(check_exists=False))
         out('Attempt 3', 'Packaging finished, restart discord.')
         # Popen(self.get_discord_path(), shell=True)
+        # Start discord but WITHOUT blocking the script (so we can close it)
+        Popen(self.get_discord_path(), shell=True, stdout=DEVNULL, stderr=DEVNULL)
+        sys.exit(0)
 
     def restore_backup(self) -> None:
         if not all([os.path.isdir('backup') and os.path.isfile('backup/package.json')]):
